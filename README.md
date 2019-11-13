@@ -4,4 +4,4 @@ This repository contains the assessment of 7 different methods used to identify 
 
 ## Introduction 
 
-Many methods have been developed to identify circadian gene. 
+Many methods have been developed to identify circadian gene. d
