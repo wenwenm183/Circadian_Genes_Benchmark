@@ -2,5 +2,6 @@
 
 This repository contains the assessment of 7 different methods used to identify genes that possess circadian rhythms. 
 
-### Introduction 
+## Introduction 
 
+Many methods have been developed to identify circadian gene. 
