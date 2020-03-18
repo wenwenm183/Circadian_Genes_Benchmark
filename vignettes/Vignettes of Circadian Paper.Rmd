@@ -1,0 +1,210 @@
+---
+title: "Vignettes of Circadian Paper (TBD)"
+author: "Yuchao Jiang, Wenwen Mei, Zhiwen Jiang"
+date: "3/17/2020"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+<center> <h4>Abstract</h4> </center>  
+This is an abstract (TBD).
+
+
+## Data Input
+The first step is to input the data that we are going to use in the following analysis. `ds_hughes2009` is the down-sampled Hughes 2009 dataset with 12506 profiles and 24 time-points. `p_benchmark` and `n_benchmark` are the sets of 104 circadian benchmark genes and 113 non-circadian benchmark genes, repectively.
+
+```{r data input}
+ds_hughes2009 <- read.csv('./data/ds_hughes2009.csv', stringsAsFactors = F)
+head(ds_hughes2009)
+p_benchmark <- read.csv('./data/p.benchmark.csv', stringsAsFactors = F)
+n_benchmark <- read.csv('./data/n.benchmark.csv', stringsAsFactors = F)
+```
+
+
+## Methods Application
+### MetaCycle
+MetaCycle is an integrated R-package of three different algorithms, LS, ARS, and JTK, enables users to select one or multiple methods to evaluate periodicity. When using JTK, the range of specified period might be adjusted according to the length of time-window. For example, if the time-window starts from CT2 to CT22, `maxper` will be adjusted to 20. `outIntegration = 'onlyIntegration'` means only output integration file.
+
+```{r metacycle, eval=F}
+library(MetaCycle)
+meta2d(infile = './data/ds_hughes2009_meta.csv', outputFile = T,  filestyle = 'csv',
+         timepoints = seq(18,64,2), outIntegration = 'onlyIntegration', maxper = 28, minper = 20, outdir = './data')
+```
+
+```{r}
+meta_ds_hughes2009 <- read.csv('./data/meta2d_ds_hughes2009.csv')
+head(meta_ds_hughes2009)
+```
+
+### RAIN
+RAIN builds on the strengths of JTK and improves its detectability with an additional set of asymmetric waveforms. `peak.border` can specify the different form of the peak. `nr.series` can specify the number of replicates. `measure.sequence` (not shown) can be used to specify the uneven sampling. RAIN
+will only return `p-value`, so we calculate `q-value` by `qvalue()` in `R package qvalue`.
+
+```{r rain, eval=F}
+library(rain)
+library(qvalue)
+rain_ds_hughes2009 <- rain(t(ds_hughes2009[,-1]), deltat = 2, period = 24, period.delta = 4,
+                                          peak.border = c(0.3, 0.7), nr.series = 1, adjp.method = "ABH")
+rain_ds_hughes2009$qvalue <- qvalue(rain_ds_hughes2009$pVal)$qvalue
+# write.csv(rain_ds_hughes2009, './data/rain_ds_hughes2009.csv')
+```
+
+```{r}
+rain_ds_hughes2009 <- read.csv('./data/rain_ds_hughes2009.csv')
+head(rain_ds_hughes2009)
+```
+
+### BIO_CYCLE
+BIO_CYCLE is a deep neural network (DNN) method trained from both simulated and empirical circadian and noncircadian time-series. This is bash code in which `-i` specifies the input file (.tsv); `-s` specifies the starting (minimal) period; `-e` specifies ending (maximum) period; `-o` specifies the output directory in which the result file (.tsv) will be saved.
+
+```{bash, eval=FALSE}
+Rscript ./BioCycle/BioCycle.R -i ./data/ds_hughes2009.tsv -s 20 -e 28 -o ./data/
+```
+
+```{r}
+bc_ds_hughes2009 <- read.table('./data/bc_ds_hughes2009.tsv', header = T)
+head(bc_ds_hughes2009)
+```
+
+
+### eJTK
+eJTK can not only well perform to dectect asymmetric waveforms, but also takes a step further to correct the initial p-values with empirical p-values calculated from permutation. `-w` specifies the waveform to be compared, it is cosine as default; `-p` specifies the period, 24, because eJTK can only detect one single period per time. `-s` and `-a` specify phases and different form of the peak, respectively; `-x` specifies the suffix of output file; `-f` speficies the directory of input file.
+
+```{bash, eval=FALSE}
+./eJTK/bin/eJTK-CalcP.py -w ./eJTK/ref_files/waveform_cosine.txt -p ./eJTK/ref_files/period24_1.txt -s ./eJTK/ref_files/phases_00-22_by2.txt -a ./eJTK/ref_files/asymmetries_02-22_by2.txt -x cos24_ph0-22_by2_a02-22_by2_OTHERTEXT -f ./data/ds_hughes2009.txt
+```
+
+```{r}
+ejtk_ds_hughes2009 <- read.table('./data/ds_hughes2009_cos24_ph0-22_by2_a02-22_by2_OTHERTEXT_jtkout_GammaP.txt', header = T)
+head(ejtk_ds_hughes2009)
+```
+
+
+## Evaluation Based on Benchmark Genes
+We evaluate the results of each method by ROC and AUC, precision and recall.
+
+### ROC and AUC
+#### Data Preprocessing
+We combine all the results into a single data frame. And then filter the benchmark genes out from the data frame. In this dataset, there are 68 circadian benchmark genes and 81 circadian benchmark genes on which all the following evaluation is based. `pq_benchmark` includes the results of benchmark genes. `actual` is the reference set that specifies whether a benchmark gene is truly circadian or not.
+
+```{r}
+pq_all_methods <- data.frame(LS_p = meta_ds_hughes2009$LS_pvalue, 
+                             LS_q = meta_ds_hughes2009$LS_BH.Q,
+                             ARS_p = meta_ds_hughes2009$ARS_pvalue, 
+                             ARS_q = meta_ds_hughes2009$ARS_BH.Q, 
+                             JTK_p = meta_ds_hughes2009$JTK_pvalue,
+                             JTK_q = meta_ds_hughes2009$JTK_BH.Q,
+                             RAIN_p = rain_ds_hughes2009$pVal,
+                             RAIN_q = rain_ds_hughes2009$qvalue,
+                             eJTK_p = ejtk_ds_hughes2009$GammaP,
+                             eJTK_q = ejtk_ds_hughes2009$GammaBH,
+                             MC_p = meta_ds_hughes2009$meta2d_pvalue, 
+                             MC_q = meta_ds_hughes2009$meta2d_BH.Q,
+                             BC_p = bc_ds_hughes2009$P_VALUE, 
+                             BC_q = bc_ds_hughes2009$Q_VALUE)
+
+p_benchmark_id <- which(ds_hughes2009$symbol %in% p_benchmark$positive.benchmark.genes)
+n_benchmark_id <- which(ds_hughes2009$symbol %in% n_benchmark$negative.benchmark.genes)
+benchmark_id <- c(p_benchmark_id, n_benchmark_id)
+pq_benchmark <- pq_all_methods[benchmark_id, ]
+
+actual <- factor(c(rep('True',68), rep('False',81)), levels = c('True', 'False'))
+```
+
+
+#### Plot ROC curves with AUC values
+```{r, message = F, fig.align="center"}
+library(pROC)
+par(pty = 's')
+roc(response = actual, predictor = pq_benchmark$LS_p, plot = T, legacy.axes = T,
+    col = '#377eb8', lwd = 2, xlab = 'False Positive Percentage', ylab = 'True Positive Percentage', quiet = T, auc = T) 
+plot.roc(x = actual, predictor = pq_benchmark$ARS_p, col = '#4daf4a',
+         lwd = 2, add = T)
+plot.roc(x = actual, predictor = pq_benchmark$JTK_p, col = '#8856a7',
+         lwd = 2, add = T)
+plot.roc(x = actual, predictor = pq_benchmark$RAIN_p, col = '#e0f3db',
+         lwd = 2, add = T)
+plot.roc(x = actual, predictor = pq_benchmark$eJTK_p, col = '#feb24c',
+         lwd = 2, add = T)
+plot.roc(x = actual, predictor = pq_benchmark$MC_p, col = '#efedf5',
+         lwd = 2, add = T)
+plot.roc(x = actual, predictor = pq_benchmark$BC_p, col = '#0317fc',
+         lwd = 2, add = T)
+
+legend(x = 0.50, y = 0.40, legend=c('LS(0.8362)', 'ARS(0.8351)', 'JTK(0.8538)', 'RAIN(0.8371)', 'eJTK(0.8449)', 'MC(0.8462)', 'BC(0.8869)'), col=c('#377eb8', '#4daf4a', '#8856a7', '#e0f3db', '#feb24c', '#efedf5', '#0317fc'), lwd = 2, pt.cex = 1.0, cex = 1, y.intersp = 0.7, bty = 'n')
+```
+
+
+### Precision and Recall
+#### Example
+There is an example of hwo to calculate $precision$ and $recall$. `predicted` is a binary set specifying whether a benchmark gene is significant or not based a certain threshold. According to the confusion table, $precision = 46/(46+5) = 0.9020$, $recall = 46/(46+22) = 0.6765$.
+
+```{r}
+predicted <- ifelse(pq_benchmark$ARS_q < 0.05, 'True', 'False')
+predicted <- factor(predicted, levels = c('True', 'False'))
+table(predicted = predicted, reference = actual)
+```
+
+
+#### Function of calculating Precision and Recall
+```{r plot precision and recall, message=F}
+get_prec_rec <- function(method, cutoff) {
+  library(caret)
+  predicted <- factor(ifelse(pq_benchmark[,method] < cutoff, 'True', 'False'),levels = c('True', 'False'))
+  recall <- recall(data = predicted, reference = actual)
+  precision <- precision(data = predicted, reference = actual)
+  results <- data.frame(method = rep(sub("_[pq]", "", method),2), threshold = rep(cutoff,2), measure = c('Precision', 'Recall'), value = c(precision, recall))
+  return(results)
+}
+```
+
+#### Calculate Precision and Recall for all Methods and Thresholds
+As our paper, we use 0.000005, 0.00005, 0.0005 as the thresholds of p-value, 0.05 as the threshold of q-value.
+```{r, message=F}
+df_pre_rec <- data.frame(method = NULL, threshold = NULL, measure = NULL, value = NULL)
+
+threshold_p <- c(0.000005, 0.00005, 0.0005)
+method_p <- c('LS_p', 'ARS_p', 'JTK_p', 'RAIN_p', 'eJTK_p', 'MC_p', 'BC_p')
+
+for (i in threshold_p){
+  for (j in method_p){
+    df_pre_rec <- rbind(df_pre_rec, get_prec_rec(method = j, cutoff = i))
+  }
+}
+
+method_q <- c('LS_q', 'ARS_q', 'JTK_q', 'RAIN_q', 'eJTK_q', 'MC_q', 'BC_q')
+
+for (j in method_q){
+    df_pre_rec <- rbind(df_pre_rec, get_prec_rec(method = j, cutoff = 0.05))
+}
+  
+df_pre_rec$threshold <- as.factor(df_pre_rec$threshold)
+```
+
+#### Results
+```{r}
+head(df_pre_rec, n = 14)
+```
+
+
+### Plot Precision and Recall
+```{r, message=F, fig.align='center', fig.height=4, fig.width=8, warning=F}
+library(ggplot2)
+ggplot(data = df_pre_rec, aes(x = method, y = value, fill = threshold)) + 
+  geom_bar(stat = 'identity',  alpha=1.0, position = position_dodge(width = 0.5)) +
+  facet_grid(~measure) + 
+  labs(x = "Method", y="Value") +
+  theme_minimal() +
+  theme(axis.text.x = element_text( color="black", size=8, angle=90), 
+        strip.text.x = element_text(face="bold"),
+        strip.text.y = element_text(face="bold")) +
+  scale_fill_manual(name="Threshold", values=c( "#92c5de", "#5e3c99","#fdae61" ,"#d7191c"))+
+  theme(axis.title.x = element_text(face= "bold", size=10))+
+  theme(axis.title.y = element_text(face= "bold", size=10))+
+  theme(axis.text.x= element_text(face= "bold", size=8))+
+  theme(axis.text.y= element_text(face= "bold", size=8)) +
+  theme(legend.title = element_text(size=8, face="bold"))+
+  theme(legend.text = element_text(size=8, face="bold"))
+```
