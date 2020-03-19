@@ -1,5 +1,5 @@
 ---
-title: "Vignettes of Circadian Paper (TBD)"
+title: "Seven Algorithms used for Circadian Rhythm Detection"
 author: "Yuchao Jiang, Wenwen Mei, Zhiwen Jiang"
 date: "3/17/2020"
 output:
@@ -9,87 +9,135 @@ output:
 ---
 
 <center> <h4>Abstract</h4> </center>  
-This is an abstract (TBD).
+
+Circadian rhythm is an approximately 24 hour oscillation of biological processes that exists in organisms, including humans. Over the last two decades, various algorithms have been developed to detect these circadian rhythm. Here, we present the usage of seven algorthims, including Lomb Scargle, ARSER, JTK_CYCLE, RAIN, eJTK_CYCLE, MetaCycle, and BIO_CYCLE. 
 
 
-## Data Input
-The first step is to input the data that we are going to use in the following analysis. `ds_hughes2009` is the down-sampled Hughes 2009 dataset with 12506 profiles and 24 time-points. `p_benchmark` and `n_benchmark` are the sets of 104 circadian benchmark genes and 113 non-circadian benchmark genes, repectively.
-
-```{r data input}
-ds_hughes2009 <- read.csv('./data/ds_hughes2009.csv', stringsAsFactors = F)
-head(ds_hughes2009)
-p_benchmark <- read.csv('./data/p.benchmark.csv', stringsAsFactors = F)
-n_benchmark <- read.csv('./data/n.benchmark.csv', stringsAsFactors = F)
+## An example of empirical dataset 
+Here we show an example of empirical dataset, Down-sampled Hughes 2009, that we use to assess the performance of seven algorithms. This dataset consists of 12,506 transcriptomes, sampled with the frequency of 2 hours/2 days. Below shows the expression values of some transcriptomes of the dataset. 
+```{r data input, echo=FALSE}
+ds_hughes2009 <- read.csv("../data/ds_hughes2009.csv", stringsAsFactors = F)
+head(ds_hughes2009)[,-1]
 ```
 
 
-## Methods Application
-### MetaCycle
-MetaCycle is an integrated R-package of three different algorithms, LS, ARS, and JTK, enables users to select one or multiple methods to evaluate periodicity. When using JTK, the range of specified period might be adjusted according to the length of time-window. For example, if the time-window starts from CT2 to CT22, `maxper` will be adjusted to 20. `outIntegration = 'onlyIntegration'` means only output integration file.
+## Methods Introduction and Application  
 
+### [Lomb Scargle](https://academic.oup.com/bioinformatics/article/22/3/310/220284) (LS)
+LS is an algorithm adopted from the field of astrophysics that detects oscillations using sinusoidal fits method.It is one of the earlier developed algorithms that can effectively deal with missing values by treating them as uneven sampling points. 
+
+### [ARSER](https://github.com/cauyrd/ARSER) (ARS)
+ARS is an algorithm that applies autoregressive spectral estimation to predict the periodic length of the time-series, and uses harmonic regression model (sinusoidal fits) to fit circadian rhythms and predict its parameters such as period, phase, amplitude, etc. 
+
+### [JTK_CYCLE](https://openwetware.org/wiki/HughesLab:JTK_Cycle) (JTK)
+JTK is a non-parametric, sinusoidal fits model that identifies oscillations by computing Kendall’s tau correlation between the time series and the specified reference sinusoidal curves. 
+
+### [MetaCycle](https://github.com/gangwug/MetaCycle) (MC)
+MetaCycle is an integrated R-package of LS, ARS, and JTK. It enables users to select one or multiple methods to evaluate periodicity. 
+
+Below is an example of R code for individual analysis with LS and its result.
+```{r ls, eval=F}
+library(MetaCycle)
+meta2d(infile = '../data/ds_hughes2009_meta.csv', outputFile = T,  filestyle = 'csv',
+         timepoints = seq(18,64,2), cycMethod="LS", outIntegration = 'noIntegration', maxper = 28, minper = 20, outdir = '../data')
+```
+```{r, echo=F}
+ls <- read.csv('../data/LSresult_ds_hughes2009_meta.csv')
+head(ls)
+```
+
+Change `cycMethod= LS` to `cycMethod= ARS` or `cycMethod= JTK` for individual anallysis with ARS or JTK. 
+
+Below is an example of integrated MetaCycle analysis with all three algorithms.
 ```{r metacycle, eval=F}
 library(MetaCycle)
-meta2d(infile = './data/ds_hughes2009_meta.csv', outputFile = T,  filestyle = 'csv',
-         timepoints = seq(18,64,2), outIntegration = 'onlyIntegration', maxper = 28, minper = 20, outdir = './data')
+meta2d(infile = '../data/ds_hughes2009_meta.csv', outputFile = T,  filestyle = 'csv',
+         timepoints = seq(18,64,2), outIntegration = 'onlyIntegration', maxper = 28, minper = 20, outdir = '../data')
 ```
-
-```{r}
-meta_ds_hughes2009 <- read.csv('./data/meta2d_ds_hughes2009.csv')
+```{r, echo=F}
+meta_ds_hughes2009 <- read.csv('../data/meta2d_ds_hughes2009.csv')
 head(meta_ds_hughes2009)
 ```
 
-### RAIN
-RAIN builds on the strengths of JTK and improves its detectability with an additional set of asymmetric waveforms. `peak.border` can specify the different form of the peak. `nr.series` can specify the number of replicates. `measure.sequence` (not shown) can be used to specify the uneven sampling. RAIN
-will only return `p-value`, so we calculate `q-value` by `qvalue()` in `R package qvalue`.
+### [RAIN](https://www.bioconductor.org/packages/release/bioc/html/rain.html)
+RAIN builds on the strengths of JTK and improves its detectability with an additional set of asymmetric waveforms.  
+`peak.border` can specify the different form of the peak.  
+`nr.series` can specify the number of replicates.  
+`measure.sequence` (not shown) can be used to specify the uneven sampling.  
+$q$-values are calculated with `qvalue()` in `R package qvalue`.
 
+Below shows an example of RAIN execution code and its output. 
 ```{r rain, eval=F}
 library(rain)
 library(qvalue)
 rain_ds_hughes2009 <- rain(t(ds_hughes2009[,-1]), deltat = 2, period = 24, period.delta = 4,
                                           peak.border = c(0.3, 0.7), nr.series = 1, adjp.method = "ABH")
 rain_ds_hughes2009$qvalue <- qvalue(rain_ds_hughes2009$pVal)$qvalue
-# write.csv(rain_ds_hughes2009, './data/rain_ds_hughes2009.csv')
 ```
 
-```{r}
-rain_ds_hughes2009 <- read.csv('./data/rain_ds_hughes2009.csv')
+```{r,echo= FALSE}
+# write.csv(rain_ds_hughes2009, '../data/rain_ds_hughes2009.csv')
+rain_ds_hughes2009 <- read.csv('../data/rain_ds_hughes2009.csv')
 head(rain_ds_hughes2009)
 ```
 
-### BIO_CYCLE
-BIO_CYCLE is a deep neural network (DNN) method trained from both simulated and empirical circadian and noncircadian time-series. This is bash code in which `-i` specifies the input file (.tsv); `-s` specifies the starting (minimal) period; `-e` specifies ending (maximum) period; `-o` specifies the output directory in which the result file (.tsv) will be saved.
+### [BIO_CYCLE](http://circadiomics.igb.uci.edu/biocycle) (BC)
+BIO_CYCLE is a deep neural network (DNN) method trained from both simulated and empirical circadian and noncircadian time-series.  
+`-i` specifies the input file (.tsv);  
+`-s` specifies the starting (minimal) period;  
+`-e` specifies ending (maximum) period;  
+`-o` specifies the output directory in which the result file (.tsv) will be saved.  
 
+Below shows an example of BC execution code and its output. 
 ```{bash, eval=FALSE}
-Rscript ./BioCycle/BioCycle.R -i ./data/ds_hughes2009.tsv -s 20 -e 28 -o ./data/
+Rscript ./BioCycle/BioCycle.R -i ../data/ds_hughes2009.tsv -s 20 -e 28 -o ../data/
 ```
 
-```{r}
-bc_ds_hughes2009 <- read.table('./data/bc_ds_hughes2009.tsv', header = T)
+```{r, echo=F}
+bc_ds_hughes2009 <- read.table('../data/bc_ds_hughes2009.tsv', header = T)
 head(bc_ds_hughes2009)
 ```
 
 
-### eJTK
-eJTK can not only well perform to dectect asymmetric waveforms, but also takes a step further to correct the initial p-values with empirical p-values calculated from permutation. `-w` specifies the waveform to be compared, it is cosine as default; `-p` specifies the period, 24, because eJTK can only detect one single period per time. `-s` and `-a` specify phases and different form of the peak, respectively; `-x` specifies the suffix of output file; `-f` speficies the directory of input file.
+### [eJTK_CYCLE](https://github.com/alanlhutchison/empirical-JTK_CYCLE-with-asymmetry) (eJTK)
+eJTK can not only effectively dectect asymmetric waveforms, but also takes a step further to correct the initial p-values with empirical p-values calculated from permutation.   
+`-w` specifies the waveform to be compared, it is cosine as default;   
+`-p` specifies the period, 24, because eJTK can only detect one single period per time.  
+`-s` and `-a` specify phases and different form of the peak, respectively;   
+`-x` specifies the suffix of output file;   
+`-f` speficies the directory of input file.  
 
+Below shows an example of eJTK execution code and its output. 
 ```{bash, eval=FALSE}
-./eJTK/bin/eJTK-CalcP.py -w ./eJTK/ref_files/waveform_cosine.txt -p ./eJTK/ref_files/period24_1.txt -s ./eJTK/ref_files/phases_00-22_by2.txt -a ./eJTK/ref_files/asymmetries_02-22_by2.txt -x cos24_ph0-22_by2_a02-22_by2_OTHERTEXT -f ./data/ds_hughes2009.txt
+./eJTK/bin/eJTK-CalcP.py -w ./eJTK/ref_files/waveform_cosine.txt -p ./eJTK/ref_files/period24_1.txt -s ./eJTK/ref_files/phases_00-22_by2.txt -a ./eJTK/ref_files/asymmetries_02-22_by2.txt -x cos24_ph0-22_by2_a02-22_by2_OTHERTEXT -f ../data/ds_hughes2009.txt
 ```
 
-```{r}
-ejtk_ds_hughes2009 <- read.table('./data/ds_hughes2009_cos24_ph0-22_by2_a02-22_by2_OTHERTEXT_jtkout_GammaP.txt', header = T)
+```{r, echo=F}
+ejtk_ds_hughes2009 <- read.table('../data/ds_hughes2009_cos24_ph0-22_by2_a02-22_by2_OTHERTEXT_jtkout_GammaP.txt', header = T)
 head(ejtk_ds_hughes2009)
 ```
 
 
 ## Evaluation Based on Benchmark Genes
-We evaluate the results of each method by ROC and AUC, precision and recall.
+We evaluate the performance of each method with four measures: receiver operating characteristic (ROC) curve, the area under the ROC curve (AUC), precision, and recall. 
+These measurements are calculated with our benchmark genes, which consist of 104 true circadian genes and 113 non-circadian genes. 
 
-### ROC and AUC
-#### Data Preprocessing
-We combine all the results into a single data frame. And then filter the benchmark genes out from the data frame. In this dataset, there are 68 circadian benchmark genes and 81 circadian benchmark genes on which all the following evaluation is based. `pq_benchmark` includes the results of benchmark genes. `actual` is the reference set that specifies whether a benchmark gene is truly circadian or not.
+### Benchmark Genes
+Here are examples of circadian and non-circadian genes used for analysis. Only 68 true circadian and 81 non-circadian genes are matched with Down-sampled Hughes 2019. 
+```{r, echo=F,message = FALSE}
+library(tidyverse)
+p_benchmark <- read.csv('../data/p.benchmark.csv', stringsAsFactors = F) %>% data.frame() 
+n_benchmark <- read.csv('../data/n.benchmark.csv', stringsAsFactors = F)%>% data.frame()
+names(p_benchmark)[2] <-"symbol"
+names(n_benchmark)[2] <-"symbol"
+p <- merge(p_benchmark, ds_hughes2009, by="symbol")
+n <- merge(n_benchmark, ds_hughes2009, by="symbol")
+genes <- cbind(p[c(1:20), 1], n[c(1:20), 1]) %>% data.frame()
+names(genes) <- c("Circadian Genes", "Non-circadian Genes")
+head(genes)
+```
 
-```{r}
+```{r, echo=F}
 pq_all_methods <- data.frame(LS_p = meta_ds_hughes2009$LS_pvalue, 
                              LS_q = meta_ds_hughes2009$LS_BH.Q,
                              ARS_p = meta_ds_hughes2009$ARS_pvalue, 
@@ -105,8 +153,8 @@ pq_all_methods <- data.frame(LS_p = meta_ds_hughes2009$LS_pvalue,
                              BC_p = bc_ds_hughes2009$P_VALUE, 
                              BC_q = bc_ds_hughes2009$Q_VALUE)
 
-p_benchmark_id <- which(ds_hughes2009$symbol %in% p_benchmark$positive.benchmark.genes)
-n_benchmark_id <- which(ds_hughes2009$symbol %in% n_benchmark$negative.benchmark.genes)
+p_benchmark_id <- which(ds_hughes2009$symbol %in% p_benchmark$symbol)
+n_benchmark_id <- which(ds_hughes2009$symbol %in% n_benchmark$symbol)
 benchmark_id <- c(p_benchmark_id, n_benchmark_id)
 pq_benchmark <- pq_all_methods[benchmark_id, ]
 
@@ -114,42 +162,44 @@ actual <- factor(c(rep('True',68), rep('False',81)), levels = c('True', 'False')
 ```
 
 
-#### Plot ROC curves with AUC values
-```{r, message = F, fig.align="center"}
+### Plot ROC curves with AUC values
+ROC curves and AUC values are computed as the joint measures of specificity and sensitivity to determine the methods’ strengths of classifying circadian and non-circadian transcriptomes. ROC curve with high AUC value suggests the method can effectively identify a large number of true circadian genes while controlling for a high false positive rate. 
+```{r, fig.align="center", message = F, echo=FALSE}
 library(pROC)
 par(pty = 's')
 roc(response = actual, predictor = pq_benchmark$LS_p, plot = T, legacy.axes = T,
-    col = '#377eb8', lwd = 2, xlab = 'False Positive Percentage', ylab = 'True Positive Percentage', quiet = T, auc = T) 
+    col = '#377eb8', lwd = 2, xlab = '1-Specificity', ylab = 'Sensitivity', quiet = T, auc = T, main="ROC Curves of Methods") 
 plot.roc(x = actual, predictor = pq_benchmark$ARS_p, col = '#4daf4a',
          lwd = 2, add = T)
 plot.roc(x = actual, predictor = pq_benchmark$JTK_p, col = '#8856a7',
          lwd = 2, add = T)
-plot.roc(x = actual, predictor = pq_benchmark$RAIN_p, col = '#e0f3db',
+plot.roc(x = actual, predictor = pq_benchmark$RAIN_p, col = 'pink',
          lwd = 2, add = T)
 plot.roc(x = actual, predictor = pq_benchmark$eJTK_p, col = '#feb24c',
          lwd = 2, add = T)
-plot.roc(x = actual, predictor = pq_benchmark$MC_p, col = '#efedf5',
+plot.roc(x = actual, predictor = pq_benchmark$MC_p, col = "red",
          lwd = 2, add = T)
 plot.roc(x = actual, predictor = pq_benchmark$BC_p, col = '#0317fc',
          lwd = 2, add = T)
 
-legend(x = 0.50, y = 0.40, legend=c('LS(0.8362)', 'ARS(0.8351)', 'JTK(0.8538)', 'RAIN(0.8371)', 'eJTK(0.8449)', 'MC(0.8462)', 'BC(0.8869)'), col=c('#377eb8', '#4daf4a', '#8856a7', '#e0f3db', '#feb24c', '#efedf5', '#0317fc'), lwd = 2, pt.cex = 1.0, cex = 1, y.intersp = 0.7, bty = 'n')
+legend(x = 0.50, y = 0.40, legend=c('LS(0.8362)', 'ARS(0.8351)', 'JTK(0.8538)', 'RAIN(0.8371)', 'eJTK(0.8449)', 'MC(0.8462)', 'BC(0.8869)'), col=c('#377eb8', '#4daf4a', '#8856a7', 'pink', '#feb24c', 'red', '#0317fc'), lwd = 2, pt.cex = 1.0, cex = 1, y.intersp = 0.7, bty = 'n')
 ```
+
 
 
 ### Precision and Recall
-#### Example
-There is an example of hwo to calculate $precision$ and $recall$. `predicted` is a binary set specifying whether a benchmark gene is significant or not based a certain threshold. According to the confusion table, $precision = 46/(46+5) = 0.9020$, $recall = 46/(46+22) = 0.6765$.
 
-```{r}
+Precision and recall rates are calculated to characterize the accuracy of each algorithm in terms of detection of circadian transcriptomes. The formulas for calculating $precision$ and $recall$ are shown below. 
+
+$$precision=\frac{TP}{TP+FP}$$
+$$recall=\frac{TP}{TP+FN}$$
+
+```{r, echo=FALSE}
 predicted <- ifelse(pq_benchmark$ARS_q < 0.05, 'True', 'False')
 predicted <- factor(predicted, levels = c('True', 'False'))
-table(predicted = predicted, reference = actual)
 ```
 
-
-#### Function of calculating Precision and Recall
-```{r plot precision and recall, message=F}
+```{r plot precision and recall, message=F, echo=FALSE}
 get_prec_rec <- function(method, cutoff) {
   library(caret)
   predicted <- factor(ifelse(pq_benchmark[,method] < cutoff, 'True', 'False'),levels = c('True', 'False'))
@@ -160,9 +210,9 @@ get_prec_rec <- function(method, cutoff) {
 }
 ```
 
-#### Calculate Precision and Recall for all Methods and Thresholds
-As our paper, we use 0.000005, 0.00005, 0.0005 as the thresholds of p-value, 0.05 as the threshold of q-value.
-```{r, message=F}
+
+We use $p$-value thresholds of 0.000005, 0.00005, 0.0005, and $q$-value threshold of 0.05 to calculate the precision and recall rates for all methods. 
+```{r, message=F,echo=F}
 df_pre_rec <- data.frame(method = NULL, threshold = NULL, measure = NULL, value = NULL)
 
 threshold_p <- c(0.000005, 0.00005, 0.0005)
@@ -183,16 +233,18 @@ for (j in method_q){
 df_pre_rec$threshold <- as.factor(df_pre_rec$threshold)
 ```
 
-#### Results
-```{r}
-head(df_pre_rec, n = 14)
+Below is a table of the calculated precision and recall rates for each method. 
+```{r, echo=FALSE}
+df_pre_rec1 <- spread(df_pre_rec, measure, value)
+head(df_pre_rec1, n=28)
 ```
 
-
-### Plot Precision and Recall
-```{r, message=F, fig.align='center', fig.height=4, fig.width=8, warning=F}
+Here is a visual representation of the comparisons among the methods. 
+```{r, message=F, fig.align='center', fig.height=4, fig.width=8, warning=F, echo=FALSE}
 library(ggplot2)
-ggplot(data = df_pre_rec, aes(x = method, y = value, fill = threshold)) + 
+df_pre_rec$method1 = factor(df_pre_rec$method, levels=c('LS','ARS','JTK','RAIN','eJTK', "MC", "BC"))
+
+ggplot(data = df_pre_rec, aes(x = method1, y = value, fill = threshold)) + 
   geom_bar(stat = 'identity',  alpha=1.0, position = position_dodge(width = 0.5)) +
   facet_grid(~measure) + 
   labs(x = "Method", y="Value") +
