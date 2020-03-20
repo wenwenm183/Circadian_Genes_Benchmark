@@ -81,24 +81,6 @@ rain_ds_hughes2009 <- read.csv('../data/rain_ds_hughes2009.csv')
 head(rain_ds_hughes2009)
 ```
 
-### [BIO_CYCLE](http://circadiomics.igb.uci.edu/biocycle) (BC)
-BIO_CYCLE is a deep neural network (DNN) method trained from both simulated and empirical circadian and noncircadian time-series.  
-`-i` specifies the input file (.tsv);  
-`-s` specifies the starting (minimal) period;  
-`-e` specifies ending (maximum) period;  
-`-o` specifies the output directory in which the result file (.tsv) will be saved.  
-
-Below shows an example of BC execution code and its output. 
-```{bash, eval=FALSE}
-Rscript ./BioCycle/BioCycle.R -i ../data/ds_hughes2009.tsv -s 20 -e 28 -o ../data/
-```
-
-```{r, echo=F}
-bc_ds_hughes2009 <- read.table('../data/bc_ds_hughes2009.tsv', header = T)
-head(bc_ds_hughes2009)
-```
-
-
 ### [eJTK_CYCLE](https://github.com/alanlhutchison/empirical-JTK_CYCLE-with-asymmetry) (eJTK)
 eJTK can not only effectively dectect asymmetric waveforms, but also takes a step further to correct the initial p-values with empirical p-values calculated from permutation.   
 `-w` specifies the waveform to be compared, it is cosine as default;   
@@ -115,6 +97,23 @@ Below shows an example of eJTK execution code and its output.
 ```{r, echo=F}
 ejtk_ds_hughes2009 <- read.table('../data/ds_hughes2009_cos24_ph0-22_by2_a02-22_by2_OTHERTEXT_jtkout_GammaP.txt', header = T)
 head(ejtk_ds_hughes2009)
+```
+
+### [BIO_CYCLE](http://circadiomics.igb.uci.edu/biocycle) (BC)
+BIO_CYCLE is a deep neural network (DNN) method trained from both simulated and empirical circadian and noncircadian time-series.  
+`-i` specifies the input file (.tsv);  
+`-s` specifies the starting (minimal) period;  
+`-e` specifies ending (maximum) period;  
+`-o` specifies the output directory in which the result file (.tsv) will be saved.  
+
+Below shows an example of BC execution code and its output. 
+```{bash, eval=FALSE}
+Rscript ./BioCycle/BioCycle.R -i ../data/ds_hughes2009.tsv -s 20 -e 28 -o ../data/
+```
+
+```{r, echo=F}
+bc_ds_hughes2009 <- read.table('../data/bc_ds_hughes2009.tsv', header = T)
+head(bc_ds_hughes2009)
 ```
 
 
@@ -164,8 +163,10 @@ actual <- factor(c(rep('True',68), rep('False',81)), levels = c('True', 'False')
 
 ### Plot ROC curves with AUC values
 ROC curves and AUC values are computed as the joint measures of specificity and sensitivity to determine the methods’ strengths of classifying circadian and non-circadian transcriptomes. ROC curve with high AUC value suggests the method can effectively identify a large number of true circadian genes while controlling for a high false positive rate. 
-```{r, fig.align="center", message = F, echo=FALSE}
+```{r, fig.align="center", results='hide', message = F, echo=FALSE}
+
 library(pROC)
+
 par(pty = 's')
 roc(response = actual, predictor = pq_benchmark$LS_p, plot = T, legacy.axes = T,
     col = '#377eb8', lwd = 2, xlab = '1-Specificity', ylab = 'Sensitivity', quiet = T, auc = T, main="ROC Curves of Methods") 
@@ -183,6 +184,8 @@ plot.roc(x = actual, predictor = pq_benchmark$BC_p, col = '#0317fc',
          lwd = 2, add = T)
 
 legend(x = 0.50, y = 0.40, legend=c('LS(0.8362)', 'ARS(0.8351)', 'JTK(0.8538)', 'RAIN(0.8371)', 'eJTK(0.8449)', 'MC(0.8462)', 'BC(0.8869)'), col=c('#377eb8', '#4daf4a', '#8856a7', 'pink', '#feb24c', 'red', '#0317fc'), lwd = 2, pt.cex = 1.0, cex = 1, y.intersp = 0.7, bty = 'n')
+
+
 ```
 
 
