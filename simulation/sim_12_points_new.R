@@ -90,14 +90,6 @@ miss_ing2 <- function(rate, dataset, miss_col = c(4,9,12)){
 }
 
 
-# measure_sequence <- function(colnames, n){
-#   numbers <- as.numeric(gsub("CT", "", colnames[-1]))
-#   time_seq <- seq(1,48,1)
-#   rslt <- rep(0,48)
-#   for (i in 1:n)
-#     rslt[numbers[i]+1] <- 1
-#   return(list(results = rslt, numbers = numbers))
-# }
 
 measure_sequence <- function(colnames, n, freq){
   numbers <- as.numeric(gsub("CT", "", colnames[-1]))
@@ -140,20 +132,20 @@ runit <- function(object = s3.nonsta.p24.t48.f4.new, time = seq(0,44,4), freq = 
 
 
 # simulation & analysis
-# group1
-# set.seed(101)
-# s8.p24.t24.f2.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 23,
-#                           freq = 1.5, type=c('cos','cos2','cos_peak','flat'))
-# s8.p24.t48.f4.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 47,
-#                           freq = 3, type=c('cos','cos2','cos_peak','flat'))
-# s8.p24.t48.f8.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 47,
-#                           freq = 6, type=c('cos','cos2','cos_peak','flat'))
-# s8.p24.t24.f4.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 23,
-#                           freq = 3, type=c('cos','cos2','cos_peak','flat'))
-# runit(s8.p24.t24.f2.new, time = seq(0,22.5,1.5), freq = 1.5)
-# runit(s8.p24.t48.f4.new, time = seq(0,45,3), freq = 3)
-# runit(s8.p24.t48.f8.new, time = seq(0,42,6), freq = 6)
-# runit(s8.p24.t24.f4.new, time = seq(0,21,3), freq = 3)
+group1
+set.seed(101)
+s8.p24.t24.f2.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 23,
+                           freq = 1.5, type=c('cos','cos2','cos_peak','flat'))
+s8.p24.t48.f4.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 47,
+                           freq = 3, type=c('cos','cos2','cos_peak','flat'))
+s8.p24.t48.f8.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 47,
+                           freq = 6, type=c('cos','cos2','cos_peak','flat'))
+s8.p24.t24.f4.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 23,
+                           freq = 3, type=c('cos','cos2','cos_peak','flat'))
+runit(s8.p24.t24.f2.new, time = seq(0,22.5,1.5), freq = 1.5)
+runit(s8.p24.t48.f4.new, time = seq(0,45,3), freq = 3)
+runit(s8.p24.t48.f8.new, time = seq(0,42,6), freq = 6)
+runit(s8.p24.t24.f4.new, time = seq(0,21,3), freq = 3)
 
 
 
@@ -207,17 +199,17 @@ runit(s8.miss10.p24.t48, time = seq(0,22,2), freq = 2)
 
 
 # new.group5
-# set.seed(105)
-# s8.r2.p24.t48.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 95,
-#                           freq = 6, type=c('cos','cos2','cos_peak','flat'))
-# colnames(s8.r2.p24.t48.new)[-1] <- paste(rep(paste('CT', seq(0,42,6), sep = ''),2), paste('_',c(sapply(seq(1,2,1),function(x){rep(x,8)})), sep=''), sep = '')
-# 
-# s8.r2.p24.t24.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 47,
-#                           freq = 6, type=c('cos','cos2','cos_peak','flat'))
-# colnames(s8.r2.p24.t24.new)[-1] <- paste(rep(paste('CT', seq(0,18,6), sep = ''),2), paste('_',c(sapply(seq(1,2,1),function(x){rep(x,4)})), sep=''), sep = '')
-# 
-# runit(s8.r2.p24.t48.new, time = rep(seq(0,42,6),2), freq = 6)
-# runit(s8.r2.p24.t24.new, time = rep(seq(0,18,6),2), freq = 6)
+set.seed(105)
+s8.r2.p24.t48.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 95,
+                          freq = 6, type=c('cos','cos2','cos_peak','flat'))
+colnames(s8.r2.p24.t48.new)[-1] <- paste(rep(paste('CT', seq(0,42,6), sep = ''),2), paste('_',c(sapply(seq(1,2,1),function(x){rep(x,8)})), sep=''), sep = '')
+
+s8.r2.p24.t24.new <- comb(n = 4, amount = c(rep(2000,3),6000), time_window = 47,
+                          freq = 6, type=c('cos','cos2','cos_peak','flat'))
+colnames(s8.r2.p24.t24.new)[-1] <- paste(rep(paste('CT', seq(0,18,6), sep = ''),2), paste('_',c(sapply(seq(1,2,1),function(x){rep(x,4)})), sep=''), sep = '')
+
+runit(s8.r2.p24.t48.new, time = rep(seq(0,42,6),2), freq = 6)
+runit(s8.r2.p24.t24.new, time = rep(seq(0,18,6),2), freq = 6)
 
 
 
