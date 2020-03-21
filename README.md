@@ -8,4 +8,4 @@ Many methods have been developed to identify circadian gene.
 
 ## Vignette 
 
-Please consult our [vignette](https://github.com/wenwenm183/Circadian_Genes_Benchmark/blob/master/vignettes/Vignettes-of-Circadian-Paper.htmlm) for guidance on how to execute different methodologies. 
+Please consult our [vignette](https://htmlpreview.github.io/?https://github.com/wenwenm183/Circadian_Genes_Benchmark/blob/master/vignettes/Vignettes-of-Circadian-Paper.html) for guidance on how to execute different methodologies. 
