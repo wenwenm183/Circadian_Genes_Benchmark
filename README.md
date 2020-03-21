@@ -4,7 +4,7 @@ This repository contains the assessment of seven different methods used to ident
 
 ## Introduction 
 
-Circadian rhythm is an approximately 24 hour oscillaiton that In the past decades, many algorithms have been developed to detect circadian transcriptomes. 
+Circadian rhythm is an approximately 24 hour oscillation of biological processes that exists in organisms, including humans. Over the last two decades, various algorithms have been developed to detect these circadian rhythm. Here, we present our analysis and user-guideline of seven algorthims, including Lomb Scargle, ARSER, JTK_CYCLE, RAIN, eJTK_CYCLE, MetaCycle, and BIO_CYCLE. 
 
 ## Vignette 
 
