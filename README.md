@@ -1,10 +1,10 @@
 # Circadian_Genes_Benchmark
 
-This repository contains the assessment of Seven different methods used to identify circadian transcriptomes. We provide not only our assessment results, but also an example of method executions. 
+This repository contains the assessment of seven different methods used to identify circadian transcriptomes. We not only provide our assessment results, but also an example of method executions. 
 
 ## Introduction 
 
-Many methods have been developed to identify circadian gene. 
+In the past decades, many 
 
 ## Vignette 
 
