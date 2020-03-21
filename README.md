@@ -4,7 +4,7 @@ This repository contains the assessment of seven different methods used to ident
 
 ## Introduction 
 
-In the past decades, many 
+Circadian rhythm is an approximately 24 hour oscillaiton that In the past decades, many algorithms have been developed to detect circadian transcriptomes. 
 
 ## Vignette 
 
