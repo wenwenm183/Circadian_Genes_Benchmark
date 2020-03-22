@@ -1719,6 +1719,7 @@ rain_ds_hughes2009$qvalue &lt;- qvalue(rain_ds_hughes2009$pVal)$qvalue</code></p
 <code>-s</code> and <code>-a</code> specify phases and different form of the peak, respectively;<br />
 <code>-x</code> specifies the suffix of output file;<br />
 <code>-f</code> speficies the directory of input file.</p>
+<p>Note: <code>GammaP</code> will vary when running the same code on the same dataset repeatedly.</p>
 <p>Below shows an example of eJTK execution code and its output.</p>
 <pre class="bash"><code>./eJTK/bin/eJTK-CalcP.py -w ./eJTK/ref_files/waveform_cosine.txt -p ./eJTK/ref_files/period24_1.txt -s ./eJTK/ref_files/phases_00-22_by2.txt -a ./eJTK/ref_files/asymmetries_02-22_by2.txt -x cos24_ph0-22_by2_a02-22_by2_OTHERTEXT -f ../data/ds_hughes2009.txt</code></pre>
 <div data-pagedtable="false">

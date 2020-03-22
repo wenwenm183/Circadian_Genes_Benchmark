@@ -89,6 +89,8 @@ eJTK can not only effectively dectect asymmetric waveforms, but also takes a ste
 `-x` specifies the suffix of output file;   
 `-f` speficies the directory of input file.  
 
+Note:  `GammaP` will vary when running the same code on the same dataset repeatedly.
+
 Below shows an example of eJTK execution code and its output. 
 ```{bash, eval=FALSE}
 ./eJTK/bin/eJTK-CalcP.py -w ./eJTK/ref_files/waveform_cosine.txt -p ./eJTK/ref_files/period24_1.txt -s ./eJTK/ref_files/phases_00-22_by2.txt -a ./eJTK/ref_files/asymmetries_02-22_by2.txt -x cos24_ph0-22_by2_a02-22_by2_OTHERTEXT -f ../data/ds_hughes2009.txt
