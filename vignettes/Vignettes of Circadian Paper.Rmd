@@ -265,3 +265,16 @@ ggplot(data = df_pre_rec, aes(x = method1, y = value, fill = threshold)) +
   theme(legend.title = element_text(size=8, face="bold"))+
   theme(legend.text = element_text(size=8, face="bold"))
 ```
+
+## Method Selection 
+
+Below is a list of each method's pros and cons that we've summarized from our benchmark assessment and literature reviews. 
+![Alt](\Methods.pdf)
+
+
+
+
+
+
+
+
