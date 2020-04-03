@@ -266,19 +266,6 @@ ggplot(data = df_pre_rec, aes(x = method1, y = value, fill = threshold)) +
   theme(legend.text = element_text(size=8, face="bold"))
 ```
 
-## Method Selection 
-
-Below is a list of each method's pros and cons that we've summarized from our benchmark assessment and literature reviews. 
-
-![](figures/Methods.png){ width=75% }
-
-
-Here we have constructed two flow charts with regards to which method(s) perform well with high/low noise, and with the presence or absense of uneven sampling, replicates, and missing values. 
-
-Below is the flow chart for datasets with low sampling resolution.
-![](figures/low.png)
-This is the flow chart for datasets with high sampling resolution.
-![](figures/high.png)
 
 
 
