@@ -46,7 +46,7 @@ ls <- read.csv('../data/LSresult_ds_hughes2009_meta.csv')
 head(ls)
 ```
 
-Change `cycMethod= LS` to `cycMethod= ARS` or `cycMethod= JTK` for individual anallysis with ARS or JTK. 
+Change `cycMethod= "LS"` to `cycMethod= "ARS"` or `cycMethod= "JTK"` for individual analysis with ARS or JTK. 
 
 Below is an example of integrated MetaCycle analysis with all three algorithms.
 ```{r metacycle, eval=F}
