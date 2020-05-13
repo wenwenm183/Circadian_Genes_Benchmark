@@ -4,7 +4,7 @@ library(caret)
 library(mltools)
 library(DescTools)
 
-setwd("/Users/mwen/Desktop/Research/LD/")
+setwd("/Users/mwen/Desktop/Research/Circadian_genes/LD/")
 load('XR.rda')
 load('XR_rain.rda')
 load('XR_metacycle.rda')
@@ -16,7 +16,7 @@ load('RNA_metacycle.rda')
 load('RNA_eJTK.rda')
 load('RNA_biocycle.rda')
 load('Nascent.rda')
-load('Nascent_rain.rda');nascent_rain=Nascent_rain; rm(Nascent_rain)
+load('Nascent_rain.rda')
 load('Nascent_metacycle.rda')
 load('Nascent_eJTK.rda')
 load('Nascent_biocycle.rda')
@@ -104,10 +104,10 @@ dev.off()
 ###### of significant genes ------
 
 setwd("/Users/mwen/Desktop/Research/LD/full/")
-load("gro_full.rda"); gro=gro_full; rm(gro_full)
-load("nascent_full.rda"); nascent=nascent_full; rm(nascent_full)
-load("RNA_full.rda"); rna=RNA_full; rm(RNA_full)
-load("XR_full.rda"); xr=XR_full; rm(XR_full)
+save(gro_full,file="gro_full.rda"); gro=gro_full;rm(gro_full)
+save(nascent_full, file="nascent_full.rda"); nascent=nascent_full; rm(nascent_full)
+save(RNA_full,file="RNA_full.rda"); rna=RNA_full; rm(RNA_full)
+save(XR_full,file="XR_full.rda"); xr=XR_full; rm(XR_full)
 
 genes=intersect(intersect(intersect(gro$ID, nascent$ID), xr$ID), rna$ID)
 length(genes)
@@ -118,6 +118,7 @@ nascent=nascent[is.element(nascent$ID, genes),]
 rna=rna[is.element(rna$ID, genes),]
 xr=xr[is.element(xr$ID, genes),]
 
+# no need ----
 gro=gro[, c(1,2, 4, 8, 10, 12, 14)]
 nascent=nascent[, c(1,seq(2,12,by=2))]
 rna=rna[, c(1,seq(2,12,by=2))]
@@ -128,6 +129,7 @@ names(rna) <- c("ID", "BC", "RAIN", "JTK", "LS", "MC", "eJTK")
 names(xr) <- c("ID", "BC", "RAIN", "JTK", "LS", "MC", "eJTK")
 names(nascent) <- c("ID", "BC", "RAIN", "JTK", "LS", "MC", "eJTK")
 
+# analysis----
 dataset = c("gro", "nascent","rna", "xr")
 method = c('LS','JTK','RAIN', 'eJTK', "MC", "BC")
 for (data in dataset) {
@@ -164,7 +166,7 @@ grid.table(sig)
 dev.off()
 
 library("readxl")
-genelist <- read.csv(file = "GeneID_symbol_convert_v1.csv",na.strings=c("","NA"), header = F,
+genelist <- read.csv(file = "./Research/Circadian_genes/LD/full/GeneID_symbol_convert_v1.csv",na.strings=c("","NA"), header = F,
                      stringsAsFactors = F)
 
 sig_bio.genes=genes[gro_bio$Q_VALUE<=0.05 & Nascent_bio$Q_VALUE<=0.05 & XR_bio$Q_VALUE<=0.05 & RNA_bio$Q_VALUE<=0.05]
@@ -191,27 +193,33 @@ View(genelist[genelist$V2 %in% subset(xr_q, JTK < 0.05)$ID, ])
 
 write.table(b, file=c, quote = F, row.names = F, col.names = F)
 
+setwd("/Users/mwen/Desktop/txt/")
 for (m in method) {
   a =rna_q[rna_q[[m]]<=0.05,1] 
   b=genelist[!is.na(match(genelist[,2], a)),1]
-  c=paste(paste(m, "ID",sep="_"),'txt', sep=".")
+  c=paste(paste(m, "RNA_ID",sep="_"),'txt', sep=".")
   write.table(b, file=c, quote = F, row.names = F, col.names = F)
 }
 
 for (m in method) {
   a =nascent_q[nascent_q[[m]]<=0.05,1] 
   b=genelist[!is.na(match(genelist[,2], a)),1]
-  c=paste(paste(m, "ID",sep="_"),'txt', sep=".")
+  c=paste(paste(m, "Nascent_ID",sep="_"),'txt', sep=".")
   write.table(b, file=c, quote = F, row.names = F, col.names = F)
 }
 
 for (m in method) {
   a =gro_q[gro_q[[m]]<=0.05,1] 
   b=genelist[!is.na(match(genelist[,2], a)),1]
-  c=paste(paste(m, "ID",sep="_"),'txt', sep=".")
+  c=paste(paste(m, "gro_ID",sep="_"),'txt', sep=".")
   write.table(b, file=c, quote = F, row.names = F, col.names = F)
 }
-
+for (m in method) {
+  a =xr_q[xr_q[[m]]<=0.05,1] 
+  b=genelist[!is.na(match(genelist[,2], a)),1]
+  c=paste(paste(m, "XR_ID",sep="_"),'txt', sep=".")
+  write.table(b, file=c, quote = F, row.names = F, col.names = F)
+}
 
 intersect_en=genelist[!is.na(match(genelist[,2], genes)),1] %>% data.frame()
 write.table(intersect_en, file="inter_ENS.txt", quote = F, row.names = F, col.names = F)
@@ -249,6 +257,10 @@ grid.table(supp_table)
 dev.off()
 
 
+
+
+
+
 dataset = c("nascent")
 method=c("eJTK")
 #method =c("eJTK", "BC","MC", "JTK")
@@ -264,6 +276,40 @@ for (data in dataset) {
     dev.off()
     }
 }
+
+
+
+xr_RAIN <- read.delim("xr_rain.txt", header = TRUE, sep = "\t",dec = ".")[, c(2,3,4,5,12)] %>% 
+  mutate(Method="XR-seq RAIN") %>% subset(Benjamini <= 0.05, select=c(1:6)) %>%
+  select(Method, everything())
+rna_RAIN <- read.delim("rna_rain.txt", header = TRUE, sep = "\t",dec = ".")[, c(2,3,4,5,12)] %>% 
+  mutate(Method="RNA-seq RAIN") %>% subset(Benjamini <= 0.05, select=c(1:6)) %>%
+  select(Method, everything())
+nascent_RAIN <- read.delim("nascent-rain.txt", header = TRUE, sep = "\t",dec = ".")[, c(2,3,4,5,12)] %>% 
+  mutate(Method="Nascent-seq RAIN") %>% subset(Benjamini <= 0.05, select=c(1:6)) %>%
+  select(Method, everything())
+temp = rbind(xr_RAIN, rna_RAIN, nascent_RAIN)
+names(temp) <- c("Category", "Term", "Count", "Percent", "P-Value", "Benjamini" )
+pdf("./RAIN.pdf", height = 25, width = 15)
+grid.table(temp)
+dev.off()
+
+temp = rbind(xr_RAIN, rna_RAIN, nascent_RAIN)
+for (data in dataset) {
+  for (m in method) {
+    file1 = paste(paste(data,m, sep = "_"),"txt", sep = ".")
+    name1= paste(paste(data,m, sep = "_"),"pdf", sep = ".")
+    temp <- read.delim(file1, header = TRUE, sep = "\t",dec = ".")[, c(1,2,3,4,5,12)]
+    temp= temp[which(temp[,6] <=0.05),]
+    names(temp) <- c("Category", "Term", "Count", "Percent", "P-Value", "Benjamini" )
+    pdf(name1, height = 25, width = 15)
+    grid.table(temp)
+    dev.off()
+  }
+}
+
+
+
 
 pdf('rna_eJTK.pdf', height = 25, width = 15)
 rna_eJTK <- read.delim("RNA_eJTK.txt", header = TRUE, sep = "\t",dec = ".")[, c(1,2,3,4,5,12)]

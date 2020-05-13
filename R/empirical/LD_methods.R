@@ -8,6 +8,7 @@ library(limma)
 #GRO-seq data -----
     #QC
     load("gro.rda")
+
     gro1 <- gro[rowSums(gro == 0) <= 4, ]
     #MC
     meta2d(infile="GRO.csv",filestyle="csv",outdir="LD_Circadian",
@@ -29,6 +30,7 @@ library(limma)
 #Nascent-seq data ----
     #QC 
     load("Nascent.rda")
+    Nascent=Nascent1[,c(1,2,8,3,9,4,10,5,11,6,12,7,13)]
     Nascent1 <- Nascent[rowSums(Nascent == 0) <= 6, ]
     #MC 
     write.csv(Nascent1, file="Nascent1.csv", row.names=F)
@@ -43,9 +45,12 @@ library(limma)
       #Rscript BioCycle.R -i /Users/mwen/Desktop/Nascent.tsv -o /Users/mwen/Desktop/ -s 20  -e 28
     
     #RAIN
-    nascent_rain <- rain(t(Nascent1[,-1]),deltat=4, period=24, period.delta = 4, peak.border = c(0.3, 0.7),
-                         nr.series = 2,  adjp.method = "ABH", verbose = FALSE)
-    nascent_rain$rain_q <- qvalue(p=Nascent_rain$pVal)$qvalues 
+    load("Nascent.rda")
+    nascent=Nascent1[,c(1,2,8,3,9,4,10,5,11,6,12,7,13)]; rm(Nascent1)
+    nascent_rain <- rain(t(nascent[,-1]),deltat=4, period=24, period.delta = 4, peak.border = c(0.3, 0.7),
+                 nr.series = 2,  adjp.method = "ABH", verbose = FALSE)
+    
+    nascent_rain$rain_q <- qvalue(p=nascent_rain$pVal)$qvalues 
     #eJTK
     write.table(Nascent1, "Nascent.txt", row.names = F, col.names = T)
    
@@ -71,8 +76,8 @@ library(limma)
     for (i in 2:13) {
       RNA[,i] <- as.numeric(as.character(RNA[,i]))
     }
-    
-    RNA_rain <- rain(t(RNA1[,-1]),deltat=4, period=24, period.delta = 4, peak.border = c(0.3, 0.7),
+    rna = RNA1[,c(1,2,8,3,9,4,10,5,11,6,12,7,13)]; rm(RNA1)
+    RNA_rain <- rain(t(rna[,-1]),deltat=4, period=24, period.delta = 4, peak.border = c(0.3, 0.7),
                      nr.series = 2,  adjp.method = "ABH", verbose = FALSE)
     
     RNA_rain$rain_q<- qvalue(p=RNA_rain$pVal)$qvalues 
@@ -102,8 +107,10 @@ library(limma)
       XR[,i] <- as.numeric(as.character(XR[,i]))
     }
     
-    XR_rain <- rain(t(XR[,-1]),deltat=4, period=24, period.delta = 4, peak.border = c(0.3, 0.7),
+    xr = XR[,c(1,2,8,3,9,4,10,5,11,6,12,7,13)]; 
+    xr_rain <- rain(t(xr[,-1]),deltat=4, period=24, period.delta = 4, peak.border = c(0.3, 0.7),
                     nr.series = 2,  adjp.method = "ABH", verbose = FALSE)
+    xr_rain$rain_q<- qvalue(p=xr_rain$pVal)$qvalues 
     
     #eJTK
     write.table(XR, "XR.txt", row.names = F, col.names = T)

@@ -13,14 +13,6 @@ output:
 Circadian rhythm is an approximately 24 hour oscillation of biological processes that exists in organisms, including humans. Over the last two decades, various algorithms have been developed to detect these circadian rhythm. Here, we present the usage of seven algorthims, including Lomb Scargle, ARSER, JTK_CYCLE, RAIN, eJTK_CYCLE, MetaCycle, and BIO_CYCLE. 
 
 
-## An example of empirical dataset 
-Here we show an example of empirical dataset, Down-sampled Hughes 2009, that we use to assess the performance of seven algorithms. This dataset consists of 12,506 transcriptomes, sampled with the frequency of 2 hours/2 days. Below shows the expression values of some transcriptomes of the dataset. 
-```{r data input, echo=FALSE}
-ds_hughes2009 <- read.csv("../data/ds_hughes2009.csv", stringsAsFactors = F)
-head(ds_hughes2009)[,-1]
-```
-
-
 ## Methods Introduction and Application  
 
 ### [Lomb Scargle](https://academic.oup.com/bioinformatics/article/22/3/310/220284) (LS)
@@ -64,7 +56,9 @@ RAIN builds on the strengths of JTK and improves its detectability with an addit
 `peak.border` can specify the different form of the peak.  
 `nr.series` can specify the number of replicates.  
 `measure.sequence` (not shown) can be used to specify the uneven sampling.  
-$q$-values are calculated with `qvalue()` in `R package qvalue`.
+$q$-values are calculated with `qvalue()` in `R package qvalue`.  
+For datasets with replicates, please make sure you change nr.series= 2 and your input data format is all replicates for each time-point are placed next to each other (for example: CT0_1, CT0_2, CT2_1, CT2_2, CT3_1, CT3_2,...)
+
 
 Below shows an example of RAIN execution code and its output. 
 ```{r rain, eval=F}
@@ -90,6 +84,7 @@ eJTK can not only effectively dectect asymmetric waveforms, but also takes a ste
 `-f` speficies the directory of input file.  
 
 Note:  `GammaP` will vary when running the same code on the same dataset repeatedly.
+eJTK_CYCLE handles missing values by separate a dataset into multiple datasets with similar missing value patterns (uneven time-point dataset), and then put the datasets back together. 
 
 Below shows an example of eJTK execution code and its output. 
 ```{bash, eval=FALSE}
@@ -116,6 +111,23 @@ Rscript ./BioCycle/BioCycle.R -i ../data/ds_hughes2009.tsv -s 20 -e 28 -o ../dat
 ```{r, echo=F}
 bc_ds_hughes2009 <- read.table('../data/bc_ds_hughes2009.tsv', header = T)
 head(bc_ds_hughes2009)
+```
+
+## Method Summary and Method Selection   
+
+![Method Summary](./figures/data_summary.png)
+
+![Pros and Cons of the Methods](./figures/P&C.png)
+
+![Method Selection for Datasets with Low-sampling Resolution](./figures/Tree1.png)
+
+![Method Selection for Datasets with High-sampling Resolution](./figures/Tree2.png)
+
+## An example of empirical dataset 
+Here we show an example of empirical dataset, Down-sampled Hughes 2009, that we use to assess the performance of seven algorithms. This dataset consists of 12,506 transcriptomes, sampled with the frequency of 2 hours/2 days. Below shows the expression values of some transcriptomes of the dataset. 
+```{r data input, echo=FALSE}
+ds_hughes2009 <- read.csv("../data/ds_hughes2009.csv", stringsAsFactors = F)
+head(ds_hughes2009)[,-1]
 ```
 
 
