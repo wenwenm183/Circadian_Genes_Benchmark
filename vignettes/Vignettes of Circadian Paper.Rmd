@@ -13,6 +13,14 @@ output:
 Circadian rhythm is an approximately 24 hour oscillation of biological processes that exists in organisms, including humans. Over the last two decades, various algorithms have been developed to detect these circadian rhythm. Here, we present the usage of seven algorthims, including Lomb Scargle, ARSER, JTK_CYCLE, RAIN, eJTK_CYCLE, MetaCycle, and BIO_CYCLE. 
 
 
+## An example of empirical dataset 
+Here we show an example of empirical dataset, Down-sampled Hughes 2009, that we use to assess the performance of seven algorithms. This dataset consists of 12,506 transcriptomes, sampled with the frequency of 2 hours/2 days. Below shows the expression values of some transcriptomes of the dataset. 
+```{r data input, echo=FALSE}
+ds_hughes2009 <- read.csv("../data/ds_hughes2009.csv", stringsAsFactors = F)
+head(ds_hughes2009)[,-1]
+```
+
+
 ## Methods Introduction and Application  
 
 ### [Lomb Scargle](https://academic.oup.com/bioinformatics/article/22/3/310/220284) (LS)
@@ -122,13 +130,6 @@ head(bc_ds_hughes2009)
 ![Method Selection for Datasets with Low-sampling Resolution](./figures/Tree1.png)
 
 ![Method Selection for Datasets with High-sampling Resolution](./figures/Tree2.png)
-
-## An example of empirical dataset 
-Here we show an example of empirical dataset, Down-sampled Hughes 2009, that we use to assess the performance of seven algorithms. This dataset consists of 12,506 transcriptomes, sampled with the frequency of 2 hours/2 days. Below shows the expression values of some transcriptomes of the dataset. 
-```{r data input, echo=FALSE}
-ds_hughes2009 <- read.csv("../data/ds_hughes2009.csv", stringsAsFactors = F)
-head(ds_hughes2009)[,-1]
-```
 
 
 ## Evaluation Based on Benchmark Genes
