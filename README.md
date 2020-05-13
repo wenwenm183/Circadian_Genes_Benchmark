@@ -8,4 +8,4 @@ Circadian rhythm is an approximately 24 hour oscillation of biological processes
 
 ## Vignette 
 
-Please consult our [vignette](https://htmlpreview.github.io/?https://github.com/wenwenm183/Circadian_Genes_Benchmark/blob/master/vignettes/Vignettes-of-Circadian-Paper.html) for guidance on how to execute different methodologies. 
+Please consult our [vignette](https://htmlpreview.github.io/?https://raw.githubusercontent.com/wenwenm183/Circadian_Genes_Benchmark/master/vignettes/Vignettes-of-Circadian-Paper.html) for guidance on how to execute different methodologies. 
