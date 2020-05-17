@@ -123,13 +123,18 @@ head(bc_ds_hughes2009)
 
 ## Method Summary and Method Selection   
 
-![Method Summary](./figures/data_summary.png)
+### Method Summary   
 
-![Pros and Cons of the Methods](./figures/P&C.png)
+![](./figures/data_summary.png)
 
-![Method Selection for Datasets with Low-sampling Resolution](./figures/Tree1.png)
+  
+### Pros and Cons of Each Method
+![](./figures/P&C.png)
+  
+### Method Selection for Datasets with Low or High Sampling Resolutions
+![](./figures/Tree.png)
 
-![Method Selection for Datasets with High-sampling Resolution](./figures/Tree2.png)
+
 
 
 ## Evaluation Based on Benchmark Genes
